@@ -1,4 +1,4 @@
-module block-rogue/game
+module "github.com/juancodja/block-rogue/game"
 
 go 1.22.3
 
