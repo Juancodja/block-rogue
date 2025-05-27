@@ -1,13 +1,15 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let entities = [];
+const player_id = 0; // ID del jugador, se puede cambiar según sea necesario
+
+let enemies = [];
 let players = [];
-let proyectiles = [];
+let projectiles = [];
 
 function drawEntities() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  entities.forEach(e => {
+  enemies.forEach(e => {
     ctx.fillStyle = e.color;
     ctx.fillRect(e.x, e.y, e.width, e.height);
   });
@@ -15,13 +17,13 @@ function drawEntities() {
     ctx.fillStyle = p.color;
     ctx.fillRect(p.x, p.y, p.width, p.height);
   });
-  proyectiles.forEach(p => {
+  projectiles.forEach(p => {
     ctx.fillStyle = p.color;
     ctx.fillRect(p.x, p.y, p.width, p.height);
   });
   
 }
-console.log(entities[0]) 
+console.log(enemies[0]) 
 
 setInterval(drawEntities, 1000 / 60); // 60 FPS
 
@@ -36,17 +38,23 @@ function connectWebSocket() {
   socket.addEventListener("message", (event) => {
     try {
       const data = JSON.parse(event.data);
-      let newEntities = data.entities || [];
-      if (Array.isArray(newEntities)) {
-        entities = newEntities;
+      let newEnemies = data.enemies || [];
+      if (Array.isArray(newEnemies)) {
+        enemies = newEnemies;
       } else {
-        console.error("Received data is not an array:", newEntities);
+        console.error("Received data is not an array:", newEnemies);
       }
       let newPlayers = data.players || [];
       if (Array.isArray(newPlayers)) {
         players = newPlayers;
       } else {
         console.error("Received players data is not an array:", newPlayers);
+      }
+      let newProjectiles = data.projectiles || [];
+      if (Array.isArray(newProjectiles)) {
+        projectiles = newProjectiles;
+      } else {
+        console.error("Received proyectiles data is not an array:", newProjectiles);
       }
     } catch (e) {
       console.error("Error parsing message:", e);
@@ -71,12 +79,14 @@ canvas.addEventListener('mousedown', (event) => {
   const source_x = 500; 
   const source_y = 400; 
   if (socket && socket.readyState === WebSocket.OPEN) {
+    let player = players.find(p => p.id === player_id);
+
     socket.send(JSON.stringify({
-      player_id: 0 ,
+      player_id: player_id ,
       type: 'attack',
       action: { 
-        source_x: source_x,
-        source_y: source_y,
+        source_x: player ? player.x : source_x,
+        source_y: player ? player.y : source_y,
         target_x: target_x,
         target_y: target_y
       }
@@ -85,8 +95,32 @@ canvas.addEventListener('mousedown', (event) => {
   }
 });
 
+const keysPressed = new Set();
 
+document.addEventListener('keydown', (event) => {
+  keysPressed.add(event.key.toLowerCase());
+});
 
+document.addEventListener('keyup', (event) => {
+  keysPressed.delete(event.key.toLowerCase());
+});
 
+setInterval(() => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+  let dx = 0;
+  let dy = 0;
+
+  if (keysPressed.has("arrowup") || keysPressed.has("w")) dy -= 1;
+  if (keysPressed.has("arrowdown") || keysPressed.has("s")) dy += 1;
+  if (keysPressed.has("arrowleft") || keysPressed.has("a")) dx -= 1;
+  if (keysPressed.has("arrowright") || keysPressed.has("d")) dx += 1;
+
+  socket.send(JSON.stringify({
+    player_id: 0,
+    type: 'move',
+    action: { dx, dy }
+  }));
+}, 1000 / 60); // 30 FPS de envío de movimiento
 
 connectWebSocket();

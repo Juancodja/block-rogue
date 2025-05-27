@@ -15,3 +15,9 @@ type Attack struct {
 	SourceX  float64 `json:"source_x"`
 	SourceY  float64 `json:"source_y"`
 }
+
+type Move struct {
+	PlayerId int     `json:"player_id"`
+	DX       float64 `json:"dx"`
+	DY       float64 `json:"dy"`
+}

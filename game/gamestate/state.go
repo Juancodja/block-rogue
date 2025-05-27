@@ -3,7 +3,7 @@ package gamestate
 import e "block-rogue/game/entities"
 
 type State struct {
-	Entities    []*e.Entity `json:"entities"`
+	Enemies     []*e.Entity `json:"enemies"`
 	Players     []*e.Player `json:"players"`
-	Proyectiles []*e.Entity `json:"projectiles"`
+	Projectiles []*e.Entity `json:"projectiles"`
 }
