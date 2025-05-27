@@ -1,78 +1,54 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"sync"
+	"block-rogue/game/comms"
+	"block-rogue/game/entities"
+	"block-rogue/game/gamestate"
+	"block-rogue/game/rutines"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
+func main() {
 
-var clients = make(map[*websocket.Conn]bool)
-var mu sync.Mutex
-
-func wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		fmt.Println("Error al aceptar conexión:", err)
-		return
+	state := gamestate.State{
+		Entities: []*entities.Entity{
+			{
+				ID:     0,
+				Name:   "tree1",
+				X:      100,
+				Y:      100,
+				DX:     0,
+				DY:     0,
+				Width:  50,
+				Height: 50,
+				Color:  "green",
+			},
+		},
+		Players: []*entities.Player{
+			{
+				ID:        1,
+				Name:      "Player1",
+				X:         500 - 15,
+				Y:         400 - 15,
+				Color:     "red",
+				Width:     30,
+				Height:    30,
+				MaxHealth: 100,
+				Health:    100,
+				Speed:     5.0,
+			},
+		},
 	}
 
-	mu.Lock()
-	clients[conn] = true
-	mu.Unlock()
+	go comms.StartWebSocketServer("localhost", 8888)
 
-	fmt.Println("Nuevo cliente conectado")
+	go rutines.StartEnemySpawner(&state)
 
-	defer func() {
-		mu.Lock()
-		delete(clients, conn)
-		mu.Unlock()
-		conn.Close()
-		fmt.Println("Cliente desconectado")
-	}()
-
-	for {
-		if _, _, err := conn.ReadMessage(); err != nil {
-			break
-		}
-	}
-}
-
-func broadcastLoop() {
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		message := `{"x":50,"y":50,"color":"orange","width":40,"height":40}`
-
-		mu.Lock()
-		for conn := range clients {
-			err := conn.WriteMessage(websocket.TextMessage, []byte(message))
-			if err != nil {
-				fmt.Println("Error al enviar mensaje:", err)
-				conn.Close()
-				delete(clients, conn)
-			}
-		}
-		mu.Unlock()
-	}
-}
-
-func main() {
-	http.HandleFunc("/ws", wsHandler)
-	go broadcastLoop()
-
-	fmt.Println("Servidor WebSocket en http://localhost:8888/ws")
-	err := http.ListenAndServe(":8888", nil)
-	if err != nil {
-		panic("Error al iniciar servidor: " + err.Error())
+		comms.BroadcastState(&state)
+		gamestate.UpdateState(&state)
 	}
 }

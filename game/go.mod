@@ -1,5 +1,5 @@
-module "github.com/juancodja/block-rogue/game"
+module "block-rogue/game"
 
-go 1.22.3
+go 1.24.3
 
 require github.com/gorilla/websocket v1.5.3 

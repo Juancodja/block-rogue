@@ -1,11 +1,9 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let entities = [
-  { x: 50, y: 60, width: 100, height: 100, color: 'red' },
-  { x: 200, y: 150, width: 80, height: 120, color: 'blue' },
-  { x: 400, y: 300, width: 150, height: 60, color: 'green' },
-];
+let entities = [];
+let players = [];
+let proyectiles = [];
 
 function drawEntities() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -13,9 +11,19 @@ function drawEntities() {
     ctx.fillStyle = e.color;
     ctx.fillRect(e.x, e.y, e.width, e.height);
   });
+  players.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+  proyectiles.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+  });
+  
 }
+console.log(entities[0]) 
 
-setInterval(drawEntities, 100);
+setInterval(drawEntities, 1000 / 60); // 60 FPS
 
 let socket;
 function connectWebSocket() {
@@ -27,9 +35,19 @@ function connectWebSocket() {
 
   socket.addEventListener("message", (event) => {
     try {
-      console.log("Message received:", event.data);
       const data = JSON.parse(event.data);
-      entities = [data]; // remplaza entidades con la nueva
+      let newEntities = data.entities || [];
+      if (Array.isArray(newEntities)) {
+        entities = newEntities;
+      } else {
+        console.error("Received data is not an array:", newEntities);
+      }
+      let newPlayers = data.players || [];
+      if (Array.isArray(newPlayers)) {
+        players = newPlayers;
+      } else {
+        console.error("Received players data is not an array:", newPlayers);
+      }
     } catch (e) {
       console.error("Error parsing message:", e);
     }
@@ -45,5 +63,30 @@ function connectWebSocket() {
     socket.close(); // Fuerza cierre para activar reconexión
   });
 }
+
+canvas.addEventListener('mousedown', (event) => {
+  const rect = canvas.getBoundingClientRect();
+  const target_x = event.clientX - rect.left;
+  const target_y = event.clientY - rect.top;
+  const source_x = 500; 
+  const source_y = 400; 
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({
+      player_id: 0 ,
+      type: 'attack',
+      action: { 
+        source_x: source_x,
+        source_y: source_y,
+        target_x: target_x,
+        target_y: target_y
+      }
+    }
+    ));
+  }
+});
+
+
+
+
 
 connectWebSocket();
