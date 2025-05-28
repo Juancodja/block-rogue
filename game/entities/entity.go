@@ -58,8 +58,8 @@ func NewEnemy(id int, name string, x, y float64) *Entity {
 		DX:        0,
 		DY:        0,
 		Color:     "red",
-		Width:     30,
-		Height:    30,
+		Width:     31,
+		Height:    31,
 		Health:    100,
 		Speed:     2.0, // Speed of the enemy
 		Type:      "enemy",
@@ -126,7 +126,9 @@ func (e *Entity) FindPlayer(players []*Player) {
 
 func (e *Entity) EnemyDamageFromProjectiles(projectiles []*Entity) {
 	for _, projectile := range projectiles {
-		if Distance(e, projectile) < (e.Width+projectile.Width)/2 {
+		w := e.Width + projectile.Width
+		w = w * w / 4
+		if Distance(e, projectile) < w {
 			e.Health -= projectile.Health
 			projectile.Health = 0
 		}

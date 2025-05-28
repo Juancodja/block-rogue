@@ -46,10 +46,10 @@ func (a Attack) Apply(state *gamestate.State) {
 	entity := entities.Entity{
 		ID:               len(state.Enemies),
 		Name:             "attack",
-		X:                a.SourceX + norm*20, // 10 pixels away from source
-		Y:                a.SourceY + norm*20, // 10 pixels away from source
-		DX:               dx,                  // 5 pixels per tick
-		DY:               dy,                  // 5 pixels per tick
+		X:                a.SourceX + dx*20, // 10 pixels away from source
+		Y:                a.SourceY + dy*20, // 10 pixels away from source
+		DX:               dx,                // 5 pixels per tick
+		DY:               dy,                // 5 pixels per tick
 		Color:            "black",
 		Width:            5,
 		Height:           5,
