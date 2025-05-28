@@ -1,6 +1,7 @@
 package entities
 
 type Player struct {
+	UUID      string  `json:"uuid"`
 	ID        int     `json:"id"`
 	Name      string  `json:"name"`
 	X         float64 `json:"x"`

@@ -1,10 +1,13 @@
 package entities
 
 import (
+	"block-rogue/game/uuidfactory"
+	"fmt"
 	"math"
 )
 
 type Entity struct {
+	UUID             string  `json:"uuid"`
 	ID               int     `json:"id"`
 	Name             string  `json:"name"`
 	X                float64 `json:"x"`
@@ -27,11 +30,12 @@ func (e *Entity) Move() {
 	e.X += e.Speed * e.DX
 	e.Y += e.Speed * e.DY
 	e.TraveledDistance += e.Speed
-	e.TimeAlive++
+	e.TimeAlive += 1
 }
 
 func NewProjectile(id int, name string, x, y, dx, dy float64, color string) *Entity {
 	return &Entity{
+		UUID:         uuidfactory.New(),
 		ID:           id,
 		Name:         name,
 		X:            x,
@@ -51,6 +55,7 @@ func NewProjectile(id int, name string, x, y, dx, dy float64, color string) *Ent
 
 func NewEnemy(id int, name string, x, y float64) *Entity {
 	return &Entity{
+		UUID:      uuidfactory.New(),
 		ID:        id,
 		Name:      name,
 		X:         x,
@@ -72,18 +77,21 @@ func (e *Entity) IsAlive() bool {
 		return false
 	}
 	if e.TraveledDistance >= e.MaxDistance {
+		fmt.Printf("%s muerta mucho desplazamiento", e.UUID)
 		return false
 	}
 	if e.TimeAlive >= e.MaxTimeAlive {
+		fmt.Printf("%s muerta por timeout\n", e.UUID)
 		return false
 	}
-	if e.X < 0 || e.Y < 0 || e.X > 1000 || e.Y > 800 { // Assuming a game area of 1000x800
+	if e.X < 0 || e.Y < 0 || e.X > 1000 || e.Y > 800 {
+		fmt.Printf("%s despawn por fuera pantalla\n", e.UUID)
 		return false
 	}
 	return true
 }
 
-func (e *Entity) FindPlayer(players []*Player) {
+func (e *Entity) FindPlayer(players map[string]*Player) {
 	if e.Type != "enemy" {
 		return
 	}
@@ -124,7 +132,7 @@ func (e *Entity) FindPlayer(players []*Player) {
 
 }
 
-func (e *Entity) EnemyDamageFromProjectiles(projectiles []*Entity) {
+func (e *Entity) EnemyDamageFromProjectiles(projectiles map[string]*Entity) {
 	for _, projectile := range projectiles {
 		w := e.Width + projectile.Width
 		w = w * w / 4

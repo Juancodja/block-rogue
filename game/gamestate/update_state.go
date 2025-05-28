@@ -1,6 +1,9 @@
 package gamestate
 
-import "block-rogue/game/entities"
+import (
+	"block-rogue/game/entities"
+	"fmt"
+)
 
 func UpdateState(state *State) {
 	ConsumeActionQueue(state)
@@ -8,8 +11,8 @@ func UpdateState(state *State) {
 	UpdatePlayers(state)
 	UpdateProjectiles(state)
 	DamageEnemies(state)
-	state.Enemies = FilterAlive(state.Enemies)
-	state.Projectiles = FilterAlive(state.Projectiles)
+	FilterAlive(state.Enemies)
+	FilterAlive(state.Projectiles)
 }
 
 func ConsumeActionQueue(state *State) {
@@ -46,16 +49,12 @@ func UpdateProjectiles(state *State) {
 		projectile.Move()
 	}
 }
-func FilterAlive(entities []*entities.Entity) []*entities.Entity {
-	n := 0
-	for _, e := range entities {
-		if e.IsAlive() {
-			entities[n] = e
-			n++
+
+func FilterAlive(entities map[string]*entities.Entity) {
+	for id, e := range entities {
+		if !e.IsAlive() {
+			delete(entities, id)
 		}
 	}
-	for i := n; i < len(entities); i++ {
-		entities[i] = nil
-	}
-	return entities[:n]
+	fmt.Printf("%d cantidad entidades \n", len(entities))
 }
