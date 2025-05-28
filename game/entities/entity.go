@@ -2,7 +2,6 @@ package entities
 
 import (
 	"block-rogue/game/uuidfactory"
-	"fmt"
 	"math"
 )
 
@@ -77,15 +76,12 @@ func (e *Entity) IsAlive() bool {
 		return false
 	}
 	if e.TraveledDistance >= e.MaxDistance {
-		fmt.Printf("%s muerta mucho desplazamiento", e.UUID)
 		return false
 	}
 	if e.TimeAlive >= e.MaxTimeAlive {
-		fmt.Printf("%s muerta por timeout\n", e.UUID)
 		return false
 	}
 	if e.X < 0 || e.Y < 0 || e.X > 1000 || e.Y > 800 {
-		fmt.Printf("%s despawn por fuera pantalla\n", e.UUID)
 		return false
 	}
 	return true
