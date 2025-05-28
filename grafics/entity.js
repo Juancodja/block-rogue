@@ -54,7 +54,7 @@ export class Entity {
 
   updateAnimation(now) {
     const dt = now - this.lastUpdate;
-    if (dt > 2000) {
+    if (dt > 50) {
       this.frame = (this.frame + 1) % this.totalFrames;
       this.lastUpdate = now;
     }
@@ -62,13 +62,18 @@ export class Entity {
 
   draw(ctx) {
     if (!this.sprite || !this.sprite.complete) return;
-    const sx = this.frame * this.frameWidth;
+
+    const cols = 4; // número de columnas en el sprite sheet
+    const sx = (this.frame % cols) * this.frameWidth;
+    const sy = Math.floor(this.frame / cols) * this.frameHeight;
+
     ctx.drawImage(
       this.sprite,
-      sx, 0, this.frameWidth, this.frameHeight,
+      sx, sy, this.frameWidth, this.frameHeight,
       Math.floor(this.x - this.width / 2),
       Math.floor(this.y - this.height / 2),
       this.width, this.height
     );
   }
+
 }

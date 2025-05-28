@@ -2,7 +2,6 @@ package gamestate
 
 import (
 	"block-rogue/game/entities"
-	"fmt"
 )
 
 func UpdateState(state *State) {
@@ -56,5 +55,4 @@ func FilterAlive(entities map[string]*entities.Entity) {
 			delete(entities, id)
 		}
 	}
-	fmt.Printf("%d cantidad entidades \n", len(entities))
 }

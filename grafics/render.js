@@ -56,7 +56,6 @@ function connectWebSocket() {
                     enemies.set(key, new Entity(entity))
                 }
             })
-            console.log(enemies)
 
             const toDelete = []
             enemies.forEach((entity, key) => {
@@ -69,7 +68,6 @@ function connectWebSocket() {
                 enemies.delete(uuid)
             }
 
-            console.log(enemies.size)
         } catch (e) {
             console.error("Error parsing message:", e);
         }

@@ -25,8 +25,8 @@ func (a CreateEnemy) Apply(state *gamestate.State) {
 		Health:           100,
 		Speed:            1.0, // px/tick
 		Type:             "enemy",
-		TimeAlive:        0,     // in ticks
-		MaxTimeAlive:     10000, // ticks
+		TimeAlive:        0,    // in ticks
+		MaxTimeAlive:     5000, // ticks
 		TraveledDistance: 0,
 		MaxDistance:      100000, // px
 	}
@@ -34,10 +34,14 @@ func (a CreateEnemy) Apply(state *gamestate.State) {
 }
 
 func StartEnemySpawner(state *gamestate.State) {
-	ticker := time.NewTicker(500 * time.Millisecond)
+	ticker := time.NewTicker(200 * time.Millisecond)
+
 	defer ticker.Stop()
 
 	for range ticker.C {
+		if len(state.Enemies) >= 50 {
+			continue
+		}
 		action := CreateEnemy{}
 		gamestate.ActionQueue <- action
 	}
@@ -46,9 +50,6 @@ func StartEnemySpawner(state *gamestate.State) {
 type EnemyAttackPlayer struct{}
 
 func (a EnemyAttackPlayer) Apply(state *gamestate.State) {
-	if len(state.Enemies) > 50 {
-		return
-	}
 	for _, entity := range state.Enemies {
 		entity.FindPlayer(state.Players)
 	}
